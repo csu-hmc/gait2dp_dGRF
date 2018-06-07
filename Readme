@@ -1,0 +1,14 @@
+To do the gait2dpi test, following is an example:
+
+from test import gait2dp_dyn_test
+gait = gait2dp_dyn_test()
+gait.do_test('freefall')
+
+Please replace 'freefall' to other names to apply different test:
+
+'stick' : Stick figure test
+'speed' : Speed test of the excutation
+'sparsity' : Sparsity test of the derivatives
+'grf' : Ground Reaction Force test
+'freefall' : Freefall dynamics test
+'derivatives' : Check derivatives of jacobian
