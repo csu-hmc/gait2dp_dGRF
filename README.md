@@ -33,7 +33,7 @@ relative velocity between foot and walking surface.
 
     Velocity of walking surface here is only the perturbation, not include average walking speed.
     
-    This model does has derivative of GRF with respect of model states
+    This model does have derivative of GRF with respect of model states
 
 Speed
 -----
