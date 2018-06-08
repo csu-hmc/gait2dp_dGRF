@@ -1,10 +1,10 @@
-# gait2dpi
+# gait2dp_dyn
 Implict torque driven gait 2D model taking account of belt velocity perturbation
 
 Introduction
 ------------
 
-Gait2DPI is one dirvatives of Gait2D model. Gait2D is a dynamic model that 
+gait2dp_dyn is one dirvatives of Gait2D model. Gait2D is a dynamic model that 
 contains the essential elements for simulating human gait in the sagittal 
 plane. The model has been used in earlier forms by Ackermann and van den 
 Bogert (2010) and by Gerritsen et al. (1998). The main features of the 
@@ -19,7 +19,7 @@ control. The model is intended for education and basic research. The model can
 be used for studies such as Ackermann and van den Bogert (2010) and Geyer and
 Herr (2010). More information about Gait2D model can be found in gait2d_reference.pdf
 
-Gait2DPI is an implict model, which added walking surface velocity perturbation
+gait2dp_dyn is an implict model, which added walking surface velocity perturbation
 on the base of Gait2D. This model can be used for finding optimal controller using direct collocation 
 in perturbed standing and walking.
 
@@ -46,11 +46,11 @@ Build
 
 To manually build the Autolev model and make use of it in Python::
 
-   $ cd (Store Path...)/gait2dpi
+   $ cd (Store Path...)/gait2dp_dyn
    
    $ python setup.py build_ext --inplace
 
 Usage
 -----
 
-See ``examples/run.py``.
+See ``example/run.py``.
