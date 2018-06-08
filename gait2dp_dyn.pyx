@@ -5,7 +5,7 @@ cdef extern from "gait2dp_dyn.h":
 
     cdef enum:
         NDOF = 9
-		NMOM = 6
+        NMOM = 6
         NSTICK = 10
 
     ctypedef struct param_struct:
@@ -29,7 +29,7 @@ cdef extern from "gait2dp_dyn.h":
         double ContactToeX
         double ContactStiff
         double ContactDamp
-		double ContactY0
+        double ContactY0
         double ContactV0
         double ContactFric
         double gravity
@@ -39,24 +39,24 @@ cdef extern from "gait2dp_dyn.h":
                    double qd[NDOF],
                    double qdd[NDOF],
                    double Vsurface[2],
-				   double mom[NMOM],
+                   double mom[NMOM],
                    double QQ[NDOF],
-                   double dQQdq[NDOF][NDOF],
-                   double dQQdqd[NDOF][NDOF],
-                   double dQQdqdd[NDOF][NDOF],
-				   double dQQdmom[NDOF][NMOM],
+                   double dQQdq[NDOF*NDOF],
+                   double dQQdqd[NDOF*NDOF],
+                   double dQQdqdd[NDOF*NDOF],
+                   double dQQdmom[NDOF*NMOM],
                    double GRF[4],
-				   double dGRFdq[4][NDOF],
-				   double dGRFdqd[4][NDOF],
-                   double stick[NSTICK][2],
-				   double tmp[16])
+                   double dGRFdq[4*NDOF],
+                   double dGRFdqd[4*NDOF],
+                   double stick[NSTICK*2],
+                   double tmp[16])
 
 
 def evaluate_autolev_rhs(np.ndarray[np.double_t, ndim=1, mode='c'] generalized_coordinates,
                          np.ndarray[np.double_t, ndim=1, mode='c'] generalized_speeds,
                          np.ndarray[np.double_t, ndim=1, mode='c'] generalized_accelerations,
                          np.ndarray[np.double_t, ndim=1, mode='c'] velocity_surface,
-						 np.ndarray[np.double_t, ndim=1, mode='c'] momments,
+                         np.ndarray[np.double_t, ndim=1, mode='c'] moments,
                          constants):
     """This function takes the current values of the coordinates, speeds,
     ,accelerations, beltvelocity, and joints' moments and returns dynamic
@@ -82,19 +82,19 @@ def evaluate_autolev_rhs(np.ndarray[np.double_t, ndim=1, mode='c'] generalized_c
     -------
     specified_quantities : ndarray, shape(9,)
         Required trunk horizontal and vertical force and the joint torques.
-    dQQ_dq: ndarray, shape(9, 9)
+    dQQ_dq: ndarray, shape(9*9)
         The derivative of QQ to q.
-    dQQ_dqd: ndarray, shape(9, 9)
+    dQQ_dqd: ndarray, shape(9*9)
         The derivative of QQ to qd.
-    dQQ_dqdd: ndarray, shape(9, 9)
+    dQQ_dqdd: ndarray, shape(9*9)
         The derivative of QQ to qdd.
     ground_reaction_forces : ndarray, shape(4,)
         The right and left ground reaction forces.
-	dGRFdq : ndarray, shape(4, 9)
+	dGRFdq : ndarray, shape(4*9)
         The derivative of GRF to q.
-	dGRFdqd : ndarray, shape(4, 9)
+	dGRFdqd : ndarray, shape(4*9)
         The derivative of GRF to qd.
-    stick_figure_coordinates : ndarray, shape(10, 2)
+    stick_figure_coordinates : ndarray, shape(10*2)
         The x and y coordinates of the important points.
 	tmp : ndarray, shape(16,)
 		Heel/Toe velocities and forces. Right->Left
@@ -184,7 +184,7 @@ def evaluate_autolev_rhs(np.ndarray[np.double_t, ndim=1, mode='c'] generalized_c
         ContactToeX=constants['ContactToeX'],
         ContactStiff=constants['ContactStiff'],
         ContactDamp=constants['ContactDamp'],
-		ContactY0=constants['ContactY0'],
+        ContactY0=constants['ContactY0'],
         ContactV0=constants['ContactV0'],
         ContactFric=constants['ContactFric'],
 		gravity=constants['gravity'])
@@ -192,31 +192,31 @@ def evaluate_autolev_rhs(np.ndarray[np.double_t, ndim=1, mode='c'] generalized_c
     # TODO: Should allow the option to pass these in, instead of creating a
     # new array on each call to this function. It would be faster.
     cdef np.ndarray[np.double_t, ndim=1, mode='c'] specified_quantities = np.zeros(9)
-    cdef np.ndarray[np.double_t, ndim=2, mode='c'] jac_dQQ_dq = np.zeros((9, 9))
-    cdef np.ndarray[np.double_t, ndim=2, mode='c'] jac_dQQ_dqd = np.zeros((9, 9))
-    cdef np.ndarray[np.double_t, ndim=2, mode='c'] jac_dQQ_dqdd = np.zeros((9, 9))
-	cdef np.ndarray[np.double_t, ndim=2, mode='c'] jac_dQQ_dmom = np.zeros((9, 6))
+    cdef np.ndarray[np.double_t, ndim=1, mode='c'] jac_dQQ_dq = np.zeros(9*9)
+    cdef np.ndarray[np.double_t, ndim=1, mode='c'] jac_dQQ_dqd = np.zeros(9*9)
+    cdef np.ndarray[np.double_t, ndim=1, mode='c'] jac_dQQ_dqdd = np.zeros(9*9)
+    cdef np.ndarray[np.double_t, ndim=1, mode='c'] jac_dQQ_dmom = np.zeros(9*6)
     cdef np.ndarray[np.double_t, ndim=1, mode='c'] ground_reaction_forces = np.zeros(4)
-	cdef np.ndarray[np.double_t, ndim=2, mode='c'] jac_dGRF_dq = np.zeros((4, 9))
-	cdef np.ndarray[np.double_t, ndim=2, mode='c'] jac_dGRF_dqd = np.zeros((4, 9))
-    cdef np.ndarray[np.double_t, ndim=2, mode='c'] stick_figure_coordinates = np.zeros((10, 2))
-	cdef np.ndarray[np.double_t, ndim=1, mode='c'] tmp = np.zeros(16)
+    cdef np.ndarray[np.double_t, ndim=1, mode='c'] jac_dGRF_dq = np.zeros(4*9)
+    cdef np.ndarray[np.double_t, ndim=1, mode='c'] jac_dGRF_dqd = np.zeros(4*9)
+    cdef np.ndarray[np.double_t, ndim=1, mode='c'] stick_figure_coordinates = np.zeros(2*10)
+    cdef np.ndarray[np.double_t, ndim=1, mode='c'] tmp = np.zeros(16)
 
     gait2dp_dyn(&p,
               <double*> generalized_coordinates.data,
               <double*> generalized_speeds.data,
               <double*> generalized_accelerations.data,
               <double*> velocity_surface.data,
-			  <double*> moments.data
+              <double*> moments.data,
               <double*> specified_quantities.data,
               <double*> jac_dQQ_dq.data,
               <double*> jac_dQQ_dqd.data,
               <double*> jac_dQQ_dqdd.data,
-			  <double*> jac_dQQ_dmom.data
+              <double*> jac_dQQ_dmom.data,
               <double*> ground_reaction_forces.data,
-			  <double*> jac_dGRF_dq.data
-			  <double*> jac_dGRF_dqd.data
+              <double*> jac_dGRF_dq.data,
+              <double*> jac_dGRF_dqd.data,
               <double*> stick_figure_coordinates.data,
-			  <double*> tmp.data)
+              <double*> tmp.data)
 
     return specified_quantities, jac_dQQ_dq, jac_dQQ_dqd, jac_dQQ_dqdd, jac_dQQ_dmom, ground_reaction_forces, jac_dGRF_dq, jac_dGRF_dqd, stick_figure_coordinates, tmp

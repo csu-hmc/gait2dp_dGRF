@@ -1,7 +1,7 @@
 // gait2dp_dyn.h
 // This file defines the data structure that holds model parameters.
 // It is needed to pass model parameters to the Autolev generated C code
-// in gait2dp_dyn.c
+// in gait2dp_dyn_al.c
 
 #define NDOF 9		/* number of kinematic degrees of freedom */
 #define NMOM 6		/* number of joint moments */
@@ -25,7 +25,7 @@ typedef struct {
 
 // function prototype for the Q(q,qd,qdd) function
 void gait2dp_dyn(param_struct* par, double q[NDOF], double qd[NDOF], double qdd[NDOF],
-		double Vsurface[2], double mom[NMOM], double QQ[NDOF], double dQQdq[NDOF][NDOF],
-		double dQQdqd[NDOF][NDOF], double dQQdqdd[NDOF][NDOF], double dQQdmom[NDOF][NMOM],
-		double GRF[4], double dGRFdq[4][NDOF], double dGRFdqd[4][NDOF],
-		double stick[NSTICK][2], double tmp[16]);
+		double Vsurface[2], double mom[NMOM], double QQ[NDOF], double dQQdq[NDOF*NDOF],
+		double dQQdqd[NDOF*NDOF], double dQQdqdd[NDOF*NDOF], double dQQdmom[NDOF*NMOM],
+		double GRF[4], double dGRFdq[4*NDOF], double dGRFdqd[4*NDOF],
+		double stick[NSTICK*2], double tmp[16]);
