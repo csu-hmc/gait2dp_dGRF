@@ -5,7 +5,7 @@ from Cython.Distutils import build_ext
 
 ext_module = Extension(name="gait2dp_dyn",
                        sources=["gait2dp_dyn.pyx",
-                                "gait2dp_dyn.c"],
+                                "gait2dp_dyn_al.c"],
                        include_dirs=[numpy.get_include()])
 
 setup(name="gait2dp_dyn",

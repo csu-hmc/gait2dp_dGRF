@@ -1,7 +1,7 @@
 // gait2dp_dyn.h
 // This file defines the data structure that holds model parameters.
 // It is needed to pass model parameters to the Autolev generated C code
-// in gait2dp_dyn.c
+// in gait2dp_dyn_al.c
 
 #define NDOF 9		/* number of kinematic degrees of freedom */
 #define NMOM 6		/* number of joint moments */
