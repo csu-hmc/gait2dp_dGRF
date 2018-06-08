@@ -19,7 +19,7 @@ typedef struct {
 // Parameters for the ground contact model
 	double ContactY;
 	double ContactHeelX, ContactToeX;
-	double ContactStiff, ContactDamp, ContactV0, ContactFric;
+	double ContactStiff, ContactDamp, ContactY0, ContactV0, ContactFric;
 
 } param_struct;
 

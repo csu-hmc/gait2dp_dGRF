@@ -58,6 +58,7 @@ def map_values_to_autolev_symbols(constants):
     d['ContactToeX'] = constants['txd']
     d['ContactStiff'] = constants['kc']
     d['ContactDamp'] = constants['cc']
+	d['ContactY0'] = constants['ys']
     d['ContactV0'] = constants['vs']
     d['ContactFric'] = constants['mu']
     d['gravity'] = constants['g']

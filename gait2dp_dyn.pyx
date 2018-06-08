@@ -29,6 +29,7 @@ cdef extern from "gait2dp_dyn.h":
         double ContactToeX
         double ContactStiff
         double ContactDamp
+		double ContactY0
         double ContactV0
         double ContactFric
         double gravity
@@ -183,6 +184,7 @@ def evaluate_autolev_rhs(np.ndarray[np.double_t, ndim=1, mode='c'] generalized_c
         ContactToeX=constants['ContactToeX'],
         ContactStiff=constants['ContactStiff'],
         ContactDamp=constants['ContactDamp'],
+		ContactY0=constants['ContactY0'],
         ContactV0=constants['ContactV0'],
         ContactFric=constants['ContactFric'],
 		gravity=constants['gravity'])
