@@ -76,19 +76,19 @@ class gait2dpi_test(object):
         dfdx = np.zeros((self.nstates, self.nstates))
         
         dfdx[:9,9:] = -np.eye(9)
-        dfdx[9:,:9] = dQQ_dp
-        dfdx[9:,9:] = dQQ_dpd
+        dfdx[9:,:9] = np.reshape(dQQ_dp, (9,9))
+        dfdx[9:,9:] = np.reshape(dQQ_dpd, (9,9))
         
         dfdxd = np.zeros((self.nstates, self.nstates))
         
         dfdxd[:9,:9] = np.eye(9)
-        dfdxd[9:,9:] = dQQ_dpdd
+        dfdxd[9:,9:] = np.reshape(dQQ_dpdd, (9,9))
         
         dfdu = np.zeros((self.nstates, self.nmom))
         
-        dfdu[9:,:] = dQQ_dmom
+        dfdu[9:,:] = np.reshape(dQQ_dmom, (9,6))
 
-        return f, dfdx, dfdxd, dfdu
+        return f, dfdx, dfdxd, dfdmom
 
     def do_test(self, command):
         #========do the stickfigure test
@@ -108,10 +108,10 @@ class gait2dpi_test(object):
             
             plt.figure(1)
             
-            Rx = sticks_walk[np.array([0,1,2,3,4,5,3]), 0]
-            Ry = sticks_walk[np.array([0,1,2,3,4,5,3]), 1]
-            Lx = sticks_walk[np.array([1,6,7,8,9,7]), 0]
-            Ly = sticks_walk[np.array([1,6,7,8,9,7]), 1]
+            Rx = sticks_walk[2*np.array([0,1,2,3,4,5,3])+0]
+            Ry = sticks_walk[2*np.array([0,1,2,3,4,5,3])+1]
+            Lx = sticks_walk[2*np.array([1,6,7,8,9,7])+0]
+            Ly = sticks_walk[2*np.array([1,6,7,8,9,7])+1]
             
             plt.plot(Rx, Ry, 'r-')
             plt.plot(Lx, Ly, 'b-')
@@ -123,6 +123,7 @@ class gait2dpi_test(object):
             print('Speed test...')
             
             vs0 = np.zeros(2)
+			mom = np.zeros(self.nmom)
             Neval = 10000
             xr = np.random.random(self.nstates)
             xdr = np.random.random(self.nstates)
@@ -130,7 +131,7 @@ class gait2dpi_test(object):
             for m in range(Neval):
                 xr = np.random.random(self.nstates)
                 xdr = np.random.random(self.nstates)
-                QQ, dQQ_dp, dQQ_dpd, dQQ_dpdd, grf, sticks = self.gait2dpi_py(xr, xdr, vs0, self.constants_dict)
+                QQ, dQQ_dp, dQQ_dpd, dQQ_dpdd, dQQ_dmom, GRF, dGRFdq, dGRFdqd, sticks_walk, tmp = self.gait2dpi_py(xr, xdr, vs0, mom, self.constants_dict)
                 
             print("Computation time for implicit dynamics with Jacobians (gait2dpmex): %s ms" % ((time.time() - start_time)*1000/10000))
                     
@@ -147,9 +148,9 @@ class gait2dpi_test(object):
                 xr = np.random.random(self.nstates)
                 xdr = np.random.random(self.nstates)
                 vsr = np.random.random(2)
-                u = np.random.random(self.ndof)
+                mom = np.random.random(self.nmom)
                 
-                f, dfdx, dfdxd, dfdu = self.gait2dpi_u(xr, xdr, vsr, u, self.constants_dict)
+                f, dfdx, dfdxd, dfdu = self.gait2dpi_u(xr, xdr, vsr, mom, self.constants_dict)
                 
                 nz[m,0] = np.count_nonzero(dfdx)
                 nz[m,1] = np.count_nonzero(dfdxd)
@@ -173,7 +174,7 @@ class gait2dpi_test(object):
             x[5] = 0.3  # dorsiflex the right ankle so only heel is ground
             vs = np.zeros(2)
             xd = np.zeros(18)
-            
+            mom = np.zeros(self.nmom)
             # for vertical GRF test, use sinusoidal vertical motion
             
             cycle = np.linspace(0, 360, 361)*pi/180
@@ -188,7 +189,7 @@ class gait2dpi_test(object):
                 for j in range(np.size(y)):
                     x[1] = y[j]
                     x[10] = vy[j]
-                    QQ, dQQ_dp, dQQ_dpd, dQQ_dpdd, grf, sticks = self.gait2dpi_py(x, xd, vs, self.constants_dict)
+                    QQ, dQQ_dp, dQQ_dpd, dQQ_dpdd, dQQ_dmom, GRF, dGRFdq, dGRFdqd, sticks_walk, tmp = self.gait2dpi_py(x, xd, vs, mom, self.constants_dict)
                     
                     Fy[j,i] = grf[1]
             
@@ -209,7 +210,7 @@ class gait2dpi_test(object):
                 x[1] = y[i]
                 for j in range(nvx):
                     x[9] = vx[j]                   
-                    QQ, dQQ_dp, dQQ_dpd, dQQ_dpdd, grf, sticks_walk = self.gait2dpi_py(x, xd, vs, self.constants_dict)
+                    QQ, dQQ_dp, dQQ_dpd, dQQ_dpdd, dQQ_dmom, GRF, dGRFdq, dGRFdqd, sticks_walk, tmp = self.gait2dpi_py(x, xd, vs, mom, self.constants_dict)
         
                     Fx[j, i] = grf[0]
                     
@@ -250,12 +251,12 @@ class gait2dpi_test(object):
             xdmin = np.array(qdmin + qddmin)
             xdmax = np.array(qdmax + qddmax)
         
-            umin = -100*np.ones(self.ncontrols)
-            umax = 100*np.ones(self.ncontrols)
+            umin = -100*np.ones(self.nmom)
+            umax = 100*np.ones(self.nmom)
             
             x = xmin + (xmax-xmin)*np.random.random(self.nstates)
             xd = xdmin + (xdmax-xdmin)*np.random.random(self.nstates)
-            u = umin + (umax-umin)*np.random.random(self.ncontrols)
+            u = umin + (umax-umin)*np.random.random(self.nmom)
             vs = np.random.random(2)
             
             f, dfdx, dfdxd, dfdu = self.gait2dpi_u(x, xd, vs, u, self.constants_dict)
@@ -292,7 +293,7 @@ class gait2dpi_test(object):
                 xd[j] = saved
                   
             # compute df/du
-            for j in range(self.ncontrols):
+            for j in range(self.nmom):
                 h = 1e-7
                 saved = u[j]
                 u[j] = u[j] + h
